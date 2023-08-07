@@ -5,3 +5,4 @@ openai
 altair
 openpyxl
 tabulate
+matplotlib
