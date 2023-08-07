@@ -29,17 +29,19 @@
 ###############################################################
 
 
+# app.py
+
 # Importar Librerías
 import streamlit as st
-import openai
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import os
 from dotenv import load_dotenv
+from io import BytesIO
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-
 
 # Cargar Datos
 df = pd.read_excel("adidas.xlsx")
@@ -58,11 +60,9 @@ st.write("- Haz un top 10 de los productos más vendidos.")
 st.write("- ¿Cuáles son las ventas totales del último mes?")
 st.write("- Compara las ventas de este mes con las del mes pasado.")
 
-
 # Cree una sección expandible para mostrar los primeros 10 registros del DataFrame
-with st.expander("Haga clic aquí para ver los primeros 10 registros"):
-    st.write(df.head(10))
-
+with st.expander("Haga clic aquí para ver los primeros 5 registros"):
+    st.write(df.head(5))
 
 # Inicializa el historial de chat si aún no lo está set
 if "messages" not in st.session_state:
@@ -72,6 +72,7 @@ if "messages" not in st.session_state:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+
 
 # Aceptar la entrada del usuario
 if prompt := st.chat_input("Realiza tu consulta:"):
@@ -84,10 +85,30 @@ if prompt := st.chat_input("Realiza tu consulta:"):
         
     # Procesar la entrada con el agente y obtener la respuesta
     agent_response = agent.run(prompt)
-        
-    # Mostrar la respuesta del agente en el contenedor de mensajes de chat
-    with st.chat_message("assistant"):
-        st.markdown(agent_response)
-        st.session_state.messages.append({"role": "assistant", "content": agent_response})
 
+    # Verificar si hay una figura activa en matplotlib
+    if plt.gcf().get_axes():
+        # Crear un objeto BytesIO para capturar la imagen del gráfico
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
 
+        # Mostrar el gráfico en Streamlit
+        with st.chat_message("assistant"):
+            st.image(buf.getvalue(), caption="Gráfico generado")
+            
+            # Agregar botón para descargar la imagen
+            st.download_button(
+                label="Descargar imagen",
+                data=buf.getvalue(),
+                file_name="grafico.png",
+                mime="image/png"
+            )
+
+            st.markdown(agent_response)
+            st.session_state.messages.append({"role": "assistant", "content": agent_response})
+    else:
+        # Si no hay gráfico, simplemente mostramos la respuesta en texto
+        with st.chat_message("assistant"):
+            st.markdown(agent_response)
+            st.session_state.messages.append({"role": "assistant", "content": agent_response})
