@@ -4,3 +4,4 @@ streamlit
 openai
 altair
 openpyxl
+tabulate
