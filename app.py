@@ -5,7 +5,7 @@
 # git init
 # git add .
 # git commit -m "primer commit"
-# git remote add origin https://github.com/nicoig/tutoria.git
+# git remote add origin https://github.com/nicoig/chat-sales.git
 # git push -u origin master
 
 # Actualizar Repo de Github
@@ -34,6 +34,12 @@ import streamlit as st
 import openai
 import numpy as np
 import pandas as pd
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+
 
 # Cargar Datos
 df = pd.read_excel("adidas.xlsx")
